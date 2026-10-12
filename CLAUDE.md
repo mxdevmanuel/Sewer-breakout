@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Sewer Breakout is a small 2D top-down C++17 game built on Allegro 5 (code comments and UI strings are in Spanish). There are three levels; the third has a boss. There are no tests and no linter configured.
+Sewer Breakout is a small 2D top-down C++17 game built on Allegro 5 (code comments and UI strings are in Spanish). There are three levels; the third has a boss. There are no tests; clang-format and clang-tidy are configured (see below).
 
 ## Build and run
 
