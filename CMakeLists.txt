@@ -5,12 +5,15 @@ project(SewerBreakout)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(./)
 
 file(GLOB sourcefiles "*.h" "*.cpp")
 
 add_executable(SewerBreakout ${sourcefiles})
+
+target_compile_options(SewerBreakout PRIVATE -Wall -Wextra)
 
 target_link_libraries(SewerBreakout PUBLIC allegro)
 target_link_libraries(SewerBreakout PUBLIC allegro_dialog)

@@ -9,14 +9,16 @@ Sewer Breakout is a small 2D top-down C++17 game built on Allegro 5 (code commen
 ## Build and run
 
 ```
-cmake -B build && cmake --build build
+cmake --preset debug && cmake --build build
 ./build/SewerBreakout     # must be run from the repo root
 ```
+
+- The `debug` preset (Ninja) writes `build/compile_commands.json`, which `.clangd` points at for editor support.
+- Format with `clang-format -i <files>` (`.clang-format`) and lint with `clang-tidy -p build <files>` (`.clang-tidy`). The existing code has not been bulk-reformatted, so run the formatter only on files you are touching.
 
 - Assets are loaded via relative paths (`Sprites/...`, `gothic_pixel.ttf`), so the working directory must be the repo root, not `build/`.
 - `CMakeLists.txt` collects sources with `file(GLOB "*.h" "*.cpp")` at the top level, so re-run `cmake` after adding or removing files. Sources live flat in the repo root.
 - Requires the Allegro 5 dev libraries (core, image, primitives, font, ttf, audio, acodec, native dialog).
-- `.gitignore` does not exclude `build/`; do not commit it.
 
 ## Architecture
 
