@@ -326,7 +326,12 @@ void Engine::handleEvents()
         redraw = true;
         break;
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
-        this->stopRunning();
+        // Cerrar la ventana muestra los creditos; cerrarla durante los creditos sale del juego
+        if (this->state == GameState::Credits) {
+            this->stopRunning();
+        } else {
+            this->startCredits();
+        }
         break;
     default:
         break;
@@ -423,6 +428,14 @@ void Engine::updatePlaying()
     this->TheManager->CheckCollissions();
     this->TheManager->mainHeroe->update();
     this->TheManager->UpdateGameObjects();
+
+    // El ultimo nivel se gana al eliminar a todos sus enemigos; el conteo se revisa despues de
+    // UpdateGameObjects porque justo al cargar el nivel aun trae el valor del nivel anterior
+    bool lastLevel = this->currentLevel + 1 == static_cast<int>(this->levels.size());
+    if (lastLevel && this->TheManager->getEnemiesCount() == 0) {
+        this->won = true;
+        this->startCredits();
+    }
 }
 
 // Regresa el estado del juego
@@ -466,6 +479,9 @@ void Engine::drawCreditsPage(int page)
     switch (page) {
     case 0:
         this->showTitleScreen();
+        if (this->won) {
+            al_draw_text(this->billboardFont, al_map_rgb(77, 113, 9), 510, 100, ALLEGRO_ALIGN_CENTER, "Ganaste!");
+        }
         al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 180, ALLEGRO_ALIGN_CENTER, "Creditos");
         break;
     case 1:

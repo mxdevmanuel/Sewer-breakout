@@ -27,6 +27,7 @@ private:
 	std::vector<LevelData> levels; // Niveles leidos de levels/
 	GameState state = GameState::Title; // Pantalla actual del juego
 	int creditsTicks = 0; // Ticks transcurridos en los creditos
+	bool won = false; // Se completo el ultimo nivel
 	static constexpr int creditsPageTicks = 120; // Duracion de cada pagina de creditos (2 s a 60 fps)
 	static constexpr int creditsPages = 3;
 
