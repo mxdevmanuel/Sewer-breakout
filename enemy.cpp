@@ -34,7 +34,7 @@ void Enemy::update()
 {
     if (this->moving) {
 
-        // Enfurecido, cada vez que pasa por su origen elige al azar entre cruz y rombo
+        // Enfurecido, elige al azar entre cruz y rombo al pasar por su origen y en cada vuelta
         bool furious = this->currentPosition == &positions[Enemy::FURIOUS];
         if (furious && this->furyPattern == Enemy::DIAMOND) {
             this->moveDiamond();
@@ -49,7 +49,10 @@ void Enemy::update()
 
         // Patrulla de ida y vuelta sobre su eje, que tambien forma la cruz al estar enfurecido
         if (!furious || this->furyPattern == Enemy::CROSS) {
-            this->patrol();
+            bool turned = this->patrol();
+            if (furious && turned) {
+                this->furyTurn();
+            }
         }
 
     }
@@ -65,20 +68,24 @@ void Enemy::update()
     }
 }
 
-// Avanza un paso de ida y vuelta sobre el eje actual, a lo mas `distance` del origen
-void Enemy::patrol()
+// Avanza un paso de ida y vuelta sobre el eje actual, a lo mas `distance` del origen;
+// devuelve true si en este paso dio la vuelta
+bool Enemy::patrol()
 {
+    bool turned = false;
     switch (this->axis) {
     case Enemy::X:
         if (this->direction == GameObject::RIGHT) {
             if (this->getX() >= this->originX + this->distance) {
                 this->direction = GameObject::LEFT;
+                turned = true;
             } else {
                 this->x += speed;
             }
         } else {
             if (this->getX() <= this->originX - this->distance) {
                 this->direction = GameObject::RIGHT;
+                turned = true;
             } else {
                 this->x -= speed;
             }
@@ -88,12 +95,14 @@ void Enemy::patrol()
         if (verticalChange) {
             if (this->getY() >= this->originY + this->distance) {
                 verticalChange = false;
+                turned = true;
             } else {
                 this->y += speed;
             }
         } else {
             if (this->getY() <= this->originY - this->distance) {
                 verticalChange = true;
+                turned = true;
             } else {
                 this->y -= speed;
             }
@@ -101,25 +110,50 @@ void Enemy::patrol()
     default:
         break;
     }
+    return turned;
 }
 
+// Al pasar por el origen: cambia de eje o empieza un rombo
 void Enemy::chooseFuryPattern()
 {
     if (rand() % 2 == 0) {
-        this->furyPattern = Enemy::DIAMOND;
-        this->diamondStep = 0;
+        this->startDiamond();
     } else {
         this->axis = this->axis == Enemy::X ? Enemy::Y : Enemy::X;
     }
 }
 
-// Recorre los cuatro vertices del rombo alrededor del origen y regresa al centro,
-// donde vuelve a elegir patron
+// Al dar la vuelta en la cruz: sigue igual, cambia de eje o empieza un rombo
+void Enemy::furyTurn()
+{
+    switch (rand() % 3) {
+    case 1:
+        this->axis = this->axis == Enemy::X ? Enemy::Y : Enemy::X;
+        break;
+    case 2:
+        this->startDiamond();
+        break;
+    default:
+        break;
+    }
+}
+
+// Empieza un rombo con sentido, vertice inicial y tamaño al azar (entre 0.5 y 1.5 veces `distance`)
+void Enemy::startDiamond()
+{
+    this->furyPattern = Enemy::DIAMOND;
+    this->diamondDir = rand() % 2 == 0 ? 1 : -1;
+    this->diamondCorner = rand() % 4;
+    this->diamondSize = this->distance * (50 + rand() % 101) / 100;
+}
+
+// Avanza un paso hacia el vertice actual del rombo alrededor del origen; en cada vertice
+// sigue (50%), se regresa (25%) o vuelve a la cruz rumbo al origen (25%)
 void Enemy::moveDiamond()
 {
-    static const int vertices[5][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {0, 0}};
-    auto targetX = static_cast<float>(this->originX + vertices[this->diamondStep][0] * this->distance);
-    auto targetY = static_cast<float>(this->originY + vertices[this->diamondStep][1] * this->distance);
+    static const int vertices[4][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+    auto targetX = static_cast<float>(this->originX + vertices[this->diamondCorner][0] * this->diamondSize);
+    auto targetY = static_cast<float>(this->originY + vertices[this->diamondCorner][1] * this->diamondSize);
     auto step = static_cast<float>(this->speed);
 
     float dx = std::clamp(targetX - this->x, -step, step);
@@ -130,15 +164,30 @@ void Enemy::moveDiamond()
         this->direction = dx > 0 ? GameObject::RIGHT : GameObject::LEFT;
     }
 
-    if (this->x == targetX && this->y == targetY) {
-        this->diamondStep++;
-        if (this->diamondStep == 5) {
-            // De vuelta en el origen: el siguiente cuadro elige patron otra vez
-            this->furyPattern = Enemy::CROSS;
-            this->diamondStep = 0;
-            this->atOrigin = false;
-        }
+    if (this->x != targetX || this->y != targetY) {
+        return;
     }
+
+    switch (rand() % 4) {
+    case 2:
+        this->diamondDir = -this->diamondDir;
+        break;
+    case 3:
+        // Los vertices 0 y 2 estan sobre el eje X y los 1 y 3 sobre el eje Y
+        this->furyPattern = Enemy::CROSS;
+        if (this->diamondCorner % 2 == 0) {
+            this->axis = Enemy::X;
+            this->direction = this->x > static_cast<float>(this->originX) ? GameObject::LEFT : GameObject::RIGHT;
+        } else {
+            this->axis = Enemy::Y;
+            this->verticalChange = this->y < static_cast<float>(this->originY);
+        }
+        this->atOrigin = false;
+        return;
+    default:
+        break;
+    }
+    this->diamondCorner = (this->diamondCorner + this->diamondDir + 4) % 4;
 }
 
 void Enemy::draw()

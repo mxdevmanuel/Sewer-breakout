@@ -9,10 +9,14 @@ private:
     bool verticalChange;
     bool atOrigin = false; // Si en el cuadro anterior estaba en su origen
     int furyPattern = 0; // Patron de movimiento enfurecido (CROSS o DIAMOND)
-    int diamondStep = 0; // Vertice del rombo hacia el que se mueve
+    int diamondCorner = 0; // Vertice del rombo hacia el que se mueve (0 a 3)
+    int diamondDir = 1; // Sentido del rombo: 1 o -1
+    int diamondSize = 0; // Distancia de los vertices al origen
 
-    void patrol(); // Ida y vuelta sobre el eje actual
+    bool patrol(); // Ida y vuelta sobre el eje actual; true si dio la vuelta
     void chooseFuryPattern(); // Elige al azar el patron enfurecido al pasar por el origen
+    void furyTurn(); // Elige al azar que hacer al dar la vuelta en la cruz
+    void startDiamond(); // Empieza un rombo con sentido, vertice y tamaño al azar
     void moveDiamond(); // Avanza un paso sobre el rombo alrededor del origen
 
 public:
