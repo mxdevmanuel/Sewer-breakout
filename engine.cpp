@@ -5,7 +5,8 @@
 #include "mapa.h"
 #include "missile.h"
 #include "item.h"
-#include "enemymissile.h"
+#include "level.h"
+#include <filesystem>
 
 Engine::Engine(int width, int height)
 {
@@ -113,7 +114,10 @@ Engine::Engine(int width, int height)
 
     al_set_window_title(this->getDisplay(), "Sewer breakout!"); // Establece el nombre del juego como titulo de ventana
 
-    defineMaps();
+    loadLevels();
+    if (error) {
+        return;
+    }
     createHero();
     try {
         TheManager->initStatsFont();
@@ -166,53 +170,6 @@ void Engine::createHero()
 // TODO: refactorizar gameobjects para obtener dimensiones de los sprites
 // TODO: refactorizar sistema de coordenadas para poder cambiar valores a proporciones
 
-void Engine::setFirstLevel()
-{
-    // Establece el mapa actual
-	this->TheManager->setCurrentMap(0);
-
-    // Posiciona al heroe en pantalla
-	this->TheManager->mainHeroe->setPosition(20, 200);
-
-    // Posiciona a los enemigos
-	this->TheManager->AddGameObject(new Enemy(500, 200, 10, 30, 8, 1, 32, GameObject::LEFT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(200, 300, 10, 30, 10, 2, 32, GameObject::LEFT, Enemy::X, true));
-    this->TheManager->AddGameObject(new Enemy(600, 100, 10, 30, 12, 1, 32, GameObject::RIGHT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(100, 300, 10, 30, 10, 2, 32, GameObject::LEFT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(800, 300, 10, 30, 8, 1, 32, GameObject::LEFT, Enemy::X, true));
-
-    // Posiciona los items
-    this->TheManager->AddGameObject(new Item(900, 300, 16, 26, Item::POTION));
-}
-
-void Engine::setSecondLevel()
-{
-    // Establece el mapa actual
-	this->TheManager->setCurrentMap(1);
-
-    // Posiciona al heroe en pantalla
-	this->TheManager->mainHeroe->setPosition(20, 200);
-
-    // Posiciona a los enemigos
-    this->TheManager->AddGameObject(new Enemy(500, 100, 10, 30, 8, 1, 32, GameObject::LEFT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(200, 300, 10, 30, 10, 2, 32, GameObject::LEFT, Enemy::X, true));
-    this->TheManager->AddGameObject(new Enemy(600, 100, 10, 30, 12, 1, 32, GameObject::RIGHT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(100, 300, 10, 30, 10, 2, 32, GameObject::LEFT, Enemy::Y, true));
-    this->TheManager->AddGameObject(new Enemy(800, 300, 10, 30, 8, 1, 32, GameObject::LEFT, Enemy::X, true));
-}
-
-void Engine::setThirdLevel()
-{
-    // Establece el mapa actual
-	this->TheManager->setCurrentMap(2);
-
-    // Posiciona al heroe en pantalla
-	this->TheManager->mainHeroe->setPosition(20, 200);
-
-    // Posiciona al jefe
-    this->TheManager->AddGameObject(new Boss(850, 200, 45, 50, 8, 1, 32, GameObject::LEFT, this->roaring));
-}
-
 void Engine::selectLevel(int level)
 {
 	if (level != this->currentLevel || this->TheManager->mainHeroe->restart)
@@ -220,32 +177,51 @@ void Engine::selectLevel(int level)
 		this->TheManager->clearGameObjectList();
 		this->TheManager->informLevel(level);
 		this->currentLevel = level;
-		switch (level) {
-		case 0:
-			this->setFirstLevel();
-			break;
-		case 1:
-			this->setSecondLevel();
-			break;
-		case 2:
-			this->setThirdLevel();
-			break;
-		default:
-			break;
+
+		// Establece el mapa, posiciona al heroe y coloca los objetos del nivel
+		const LevelData &data = this->levels[level];
+		this->TheManager->setCurrentMap(level);
+		this->TheManager->mainHeroe->setPosition(data.heroX, data.heroY);
+		for (const Spawn &spawn : data.spawns) {
+			switch (spawn.kind) {
+			case Spawn::ENEMY:
+				this->TheManager->AddGameObject(new Enemy(spawn.x, spawn.y, spawn.width, spawn.height, spawn.hits, spawn.speed, spawn.distance, spawn.direction, spawn.axis, true));
+				break;
+			case Spawn::ITEM:
+				this->TheManager->AddGameObject(new Item(spawn.x, spawn.y, spawn.width, spawn.height, spawn.itemType));
+				break;
+			case Spawn::BOSS:
+				this->TheManager->AddGameObject(new Boss(spawn.x, spawn.y, spawn.width, spawn.height, spawn.hits, spawn.speed, spawn.distance, spawn.direction, this->roaring));
+				break;
+			}
 		}
 		this->TheManager->mainHeroe->updateMap(this->TheManager->getCurrentMap());
 	}
 }
 
-void Engine::defineMaps()
+// Carga levels/level1.txt, level2.txt, ... hasta que falte un archivo, con un mapa por nivel
+void Engine::loadLevels()
 {
     try {
-        this->TheManager->AddMap(new Mapa(this->getDisplay(), "Sprites/ESCENARIO1.png", "Sprites/ESCENARIO1_COLLISION.png"));
-        this->TheManager->AddMap(new Mapa(this->getDisplay(), "Sprites/ESCENARIO2.png", "Sprites/ESCENARIO2_COLLISION.png"));
-        this->TheManager->AddMap(new Mapa(this->getDisplay(), "Sprites/ESCENARIO3.png", "Sprites/ESCENARIO3_COLLISION.png"));
-    } catch (std::string filename) {
-        al_show_native_message_box(this->getDisplay(), "Error!", "Error al intentar cargar la imagen:", filename.c_str(), nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        this->error = true;
+        for (int i = 1;; ++i) {
+            std::string path = "levels/level" + std::to_string(i) + ".txt";
+            if (!std::filesystem::exists(path)) {
+                break;
+            }
+            this->levels.push_back(loadLevel(path));
+            const LevelData &data = this->levels.back();
+            this->TheManager->AddMap(new Mapa(this->getDisplay(), data.mapFile, data.collisionFile));
+        }
+    } catch (const std::string &filename) {
+        fail("Error al intentar cargar la imagen:", filename.c_str());
+        return;
+    } catch (const std::runtime_error &e) {
+        fail("Error en archivo de nivel:", e.what());
+        return;
+    }
+
+    if (this->levels.empty()) {
+        fail("Fallo en carga", "No se encontraron niveles en levels/");
     }
 }
 
@@ -438,7 +414,7 @@ void Engine::updatePlaying()
 
     if (this->TheManager->getEnemiesCount() == 0 && this->TheManager->mainHeroe->nextLevel) {
         this->TheManager->mainHeroe->nextLevel = false;
-        if (this->currentLevel != 2) {
+        if (this->currentLevel + 1 < static_cast<int>(this->levels.size())) {
             this->selectLevel(this->currentLevel + 1);
         }
     }

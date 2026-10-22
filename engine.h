@@ -9,6 +9,8 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include "manager.h"
+#include "level.h"
+#include <vector>
 
 // Pantallas por las que pasa el juego
 enum class GameState { Title, Playing, Paused, GameOver, Credits };
@@ -22,6 +24,7 @@ private:
 	bool fullScreen; // Bandera de pantalla completa
     bool error;
 	int currentLevel;
+	std::vector<LevelData> levels; // Niveles leidos de levels/
 	GameState state = GameState::Title; // Pantalla actual del juego
 	int creditsTicks = 0; // Ticks transcurridos en los creditos
 	static constexpr int creditsPageTicks = 120; // Duracion de cada pagina de creditos (2 s a 60 fps)
@@ -61,13 +64,10 @@ public:
 	void update(); // Metodo sin retorno que actualiza los objetos del juego
 	void updatePlaying(); // Actualiza el nivel mientras se juega
 	void draw(); // Metodo sin retorno que dibuja el juego
-	void defineMaps(); // Metodo que define los mapas a utilizar en el juego
+	void loadLevels(); // Lee los niveles de levels/ y carga sus mapas
 	void createHero(); // Metodo que inicializa al heroe dentro del manager
 	void keyPressed(int key); // Metodo sin retorno que maneja las teclas presionadas
     void keyReleased(int key);
-	void setFirstLevel();
-	void setSecondLevel();
-	void setThirdLevel();
 	void selectLevel(int level);
     void shoot();
 

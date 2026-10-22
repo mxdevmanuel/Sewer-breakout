@@ -1,0 +1,6 @@
+# Nivel 3: jefe
+map   Sprites/ESCENARIO3.png Sprites/ESCENARIO3_COLLISION.png
+hero  20 200
+
+#     x   y   w  h  golpes vel dist dir
+boss  850 200 45 50 8      1   32   LEFT

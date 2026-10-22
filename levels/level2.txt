@@ -1,0 +1,10 @@
+# Nivel 2
+map   Sprites/ESCENARIO2.png Sprites/ESCENARIO2_COLLISION.png
+hero  20 200
+
+#     x   y   w  h  golpes vel dist dir   eje
+enemy 500 100 10 30 8      1   32   LEFT  Y
+enemy 200 300 10 30 10     2   32   LEFT  X
+enemy 600 100 10 30 12     1   32   RIGHT Y
+enemy 100 300 10 30 10     2   32   LEFT  Y
+enemy 800 300 10 30 8      1   32   LEFT  X
