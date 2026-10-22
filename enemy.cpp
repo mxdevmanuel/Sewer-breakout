@@ -1,9 +1,10 @@
 #include "enemy.h"
+#include <cmath>
 
 Enemy::Enemy(float x, float y, float width, float height, float hits, int speed, int distance, int direction, int axis, bool moving)
     : GameObject(x, y, width, height)
 {
-    this->hits = hits;
+    this->hits = static_cast<int>(hits);
     this->hitCount = 0;
     this->direction = direction;
     this->speed = speed;
@@ -31,14 +32,18 @@ void Enemy::update()
 {
     if (this->moving) {
 
+        // Enfurecido, cambia de eje cada vez que pasa por su origen y patrulla en forma de cruz
         if (this->currentPosition == &positions[Enemy::FURIOUS]) {
-            if ((this->getX() >= this->originX + this->speed || this->getX() <= this->originX + this->speed) && (this->getY () >= this->originY + this->speed || this->getY() <= this->originY + this->speed)) {
+            bool nearOrigin = std::abs(this->getX() - static_cast<float>(this->originX)) < static_cast<float>(this->speed)
+                && std::abs(this->getY() - static_cast<float>(this->originY)) < static_cast<float>(this->speed);
+            if (nearOrigin && !this->atOrigin) {
                 if(this->axis == Enemy::X){
                     this->axis = Enemy::Y;
                 } else {
                     this->axis = Enemy::X;
                 }
             }
+            this->atOrigin = nearOrigin; // Solo cambia una vez por pasada, aunque siga cerca del origen
         }
 
         switch (this->axis) {

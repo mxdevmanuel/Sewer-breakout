@@ -7,6 +7,7 @@ class Enemy: public GameObject
 private:
     int hits, speed, distance, direction, hitCount, axis, originX, originY, acceleration;
     bool verticalChange;
+    bool atOrigin = false; // Si en el cuadro anterior estaba en su origen
 
 public:
     Enemy(float x, float y, float width, float height, float hits, int speed, int distance, int direction, int axis, bool moving);
