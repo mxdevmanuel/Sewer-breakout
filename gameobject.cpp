@@ -57,7 +57,7 @@ void GameObject::getBounds(float *x, float *y, float *finalX, float *finalY)
     *x = this->x;
     *y = this->y;
     *finalX = this->x + this->width;
-    *finalY = this->y + this->width;
+    *finalY = this->y + this->height;
 }
 
 void GameObject::setPosition(float x, float y)

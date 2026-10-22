@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
@@ -26,7 +25,6 @@ private:
 
 	ALLEGRO_BITMAP *titleScreen; // Imagen de bienvenida al juego
 	ALLEGRO_BITMAP *gameover; // Imagen de fin de juego
-    ALLEGRO_BITMAP *items; // Imagen de los items
     ALLEGRO_SAMPLE *intro, *spit, *roaring;
 
 public:
@@ -35,7 +33,7 @@ public:
     ALLEGRO_FONT *billboardFont;
 	ALLEGRO_TIMER *timer; // Temporizador de frecuencia de dibujado
 	ALLEGRO_EVENT_QUEUE *event_list; // Cola de eventos producidos en el juego
-	ALLEGRO_EVENT ev; // Variable que recibe los eventos del juego
+	ALLEGRO_EVENT ev{}; // Variable que recibe los eventos del juego
 	bool redraw; // Variable que indica cuando debe ser redibujada la pantalla
 
 	Engine(int width, int height); // Constructor

@@ -20,7 +20,7 @@ Engine::Engine(int width, int height)
 
     // Inicialiazar allegro y manejar errores de inicializacion
     if (!al_init()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar Allegro", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar Allegro", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         this->error = true;
     }
 
@@ -28,7 +28,7 @@ Engine::Engine(int width, int height)
     timer = al_create_timer(1.0 / fps);
     if (!timer) //Manejar errores del timer
     {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el timer", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el timer", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         this->error = true;
     }
 
@@ -36,7 +36,7 @@ Engine::Engine(int width, int height)
     display = al_create_display(width, height);
     if (!display) // Manejar errores del display
     {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el display", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el display", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         this->error = true;
     }
@@ -45,7 +45,7 @@ Engine::Engine(int width, int height)
     event_list = al_create_event_queue();
     if (!event_list) // Manejar errores de la cola de eventos
     {
-        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar la cola de eventos", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar la cola de eventos", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         this->error = true;
@@ -53,7 +53,7 @@ Engine::Engine(int width, int height)
 
     // Inicializar teclado y manejar errores
     if (!al_install_keyboard()) {
-        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el teclado", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el teclado", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -62,7 +62,7 @@ Engine::Engine(int width, int height)
 
     // Inicializar addon de imagenes y manejar errores
     if (!al_init_image_addon()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de imagenes", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de imagenes", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -71,7 +71,7 @@ Engine::Engine(int width, int height)
 
     // Inicializacion del addon de figuras primitivas
     if (!al_init_primitives_addon()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de primitivas", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de primitivas", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -80,7 +80,7 @@ Engine::Engine(int width, int height)
 
     // Inicializacion de los addons de fuente y formato True Type Font
     if (!al_init_font_addon()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -88,7 +88,7 @@ Engine::Engine(int width, int height)
     }
 
     if (!al_init_ttf_addon()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes True Type", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes True Type", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -96,7 +96,7 @@ Engine::Engine(int width, int height)
     }
 
     if (!al_install_audio()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de audio", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de audio", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -104,7 +104,7 @@ Engine::Engine(int width, int height)
     }
 
     if (!al_init_acodec_addon()) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el codec de audio", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el codec de audio", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -112,7 +112,7 @@ Engine::Engine(int width, int height)
     }
 
     if (!al_reserve_samples(2)) {
-        al_show_native_message_box(NULL, "Error!", "Fallo inicialización", "Hubo un error al intentar reservar los samples", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar reservar los samples", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -122,7 +122,7 @@ Engine::Engine(int width, int height)
     // Carga de imagen de titulo y manejo de falla en carga
     titleScreen = al_load_bitmap("Sprites/YAY.jpg");
     if (!titleScreen) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de titulo", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de titulo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -133,7 +133,7 @@ Engine::Engine(int width, int height)
     gameover = al_load_bitmap("Sprites/gameover.png");
     if (!gameover) // si no pudo cargar la imagen
     {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de fin de juego", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de fin de juego", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -143,7 +143,7 @@ Engine::Engine(int width, int height)
     // Cargar la fuente de los letreros
     billboardFont = al_load_ttf_font("gothic_pixel.ttf", 68, 0);
     if (!billboardFont) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la fuente de los letreros", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la fuente de los letreros", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -152,7 +152,7 @@ Engine::Engine(int width, int height)
 
     intro = al_load_sample("Sprites/intro.wav");
     if (!intro) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de intro", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de intro", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -161,7 +161,7 @@ Engine::Engine(int width, int height)
 
     spit = al_load_sample("Sprites/spit.wav");
     if (!spit) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -170,7 +170,7 @@ Engine::Engine(int width, int height)
 
     roaring = al_load_sample("Sprites/roar.wav");
     if (!roaring) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         al_destroy_timer(timer);
         al_destroy_display(display);
         al_destroy_event_queue(event_list);
@@ -184,7 +184,7 @@ Engine::Engine(int width, int height)
 
     al_set_window_title(this->getDisplay(), "Sewer breakout!"); // Establece el nombre del juego como titulo de ventana
     bool iniciar = false; // Variable para iniciar el juego
-    al_play_sample(this->intro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+    al_play_sample(this->intro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
     showTitleScreen(); // Se muestra la pantalla de inicio
     al_draw_text(this->billboardFont, al_map_rgb(77, 113, 9), 510, 307.5, ALLEGRO_ALIGN_CENTER, "Presione Enter");
     al_flip_display(); // Se manda al display
@@ -327,7 +327,7 @@ void Engine::defineMaps()
         this->TheManager->AddMap(new Mapa(this->getDisplay(), "Sprites/ESCENARIO2.png", "Sprites/ESCENARIO2_COLLISION.png"));
         this->TheManager->AddMap(new Mapa(this->getDisplay(), "Sprites/ESCENARIO3.png", "Sprites/ESCENARIO3_COLLISION.png"));
     } catch (std::string filename) {
-        al_show_native_message_box(this->getDisplay(), "Error!", "Error al intentar cargar la imagen:", filename.c_str(), NULL, ALLEGRO_MESSAGEBOX_ERROR);
+        al_show_native_message_box(this->getDisplay(), "Error!", "Error al intentar cargar la imagen:", filename.c_str(), nullptr, ALLEGRO_MESSAGEBOX_ERROR);
         this->error = true;
     }
 }
@@ -363,7 +363,7 @@ void Engine::keyPressed(int key)
 
 void Engine::shoot()
 {
-    al_play_sample(this->spit, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+    al_play_sample(this->spit, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
     this->TheManager->AddGameObject(new Missile(this->TheManager->mainHeroe->getX(),
         this->TheManager->mainHeroe->getY(),
         23.0, 25.0, 10, this->TheManager->mainHeroe->getLastDirection()));
@@ -480,7 +480,7 @@ void Engine::update()
 		this->TheManager->mainHeroe->update();
 		this->TheManager->UpdateGameObjects();
 	}
-	
+
 }
 
 // Regresa el estado del juego

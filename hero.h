@@ -4,12 +4,10 @@
 #include <map>
 #include "gameobject.h"
 #include "mapa.h"
-#include "item.h"
 
-
-class Hero: public GameObject
+class Hero : public GameObject
 {
-private:
+  private:
     int lives;
     int speed;
     int lastDirection;
@@ -17,14 +15,18 @@ private:
     int points;
     bool directions[4] = {false, false, false, false};
     ALLEGRO_BITMAP* collisionMap;
-    ALLEGRO_COLOR currentColors[2];
+    ALLEGRO_COLOR currentColors[2]{};
     Mapa* current;
     bool isBoundary();
-	std::map<int, int> itemList;
+    std::map<int, int> itemList;
 
-public:
+  public:
     Hero(float x, float y, float width, float height, int lives, int speed);
-    enum positionNames {STANDING, WALKING};
+    enum positionNames
+    {
+        STANDING,
+        WALKING
+    };
     void move(int direction);
     void stop(int direction);
     void setSprites();
@@ -33,16 +35,19 @@ public:
     void update();
     void collision(GameObject* cw);
     void die();
-    bool toDestroy() {return false; }
+    bool toDestroy()
+    {
+        return false;
+    }
     bool isDead();
     bool mustStartAgain();
-	bool restart;
-	bool nextLevel;
+    bool restart = false;
+    bool nextLevel;
     int getLastDirection();
     int getPoints();
-	void setPoints(int points);
+    void setPoints(int points);
     int getLives();
-	void setItemList();
+    void setItemList();
 };
 
 #endif // HERO_H

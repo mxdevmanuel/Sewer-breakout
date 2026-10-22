@@ -1,8 +1,9 @@
 #include "hero.h"
-#include <iostream>
 
 Hero::Hero(float x, float y, float width, float height, int lives, int speed): GameObject(x, y, width, height)
 {
+    this->collisionMap = nullptr;
+    this->current = nullptr;
     this->lives = lives;
     this->speed = speed;
     this->points = 0;
@@ -12,7 +13,7 @@ Hero::Hero(float x, float y, float width, float height, int lives, int speed): G
     this->lastPosition = this->STANDING;
     this->moving = false;
 	this->nextLevel = false;
-    this->setSprites();
+    Hero::setSprites();
 }
 
 void Hero::setSprites()
@@ -58,51 +59,51 @@ void Hero::update()
     if (this->isBoundary()) {
         if (directions[0]) {
             directions[0] = false;
-            this->x -= (this->speed * 2);
+            this->x -= static_cast<float>(this->speed * 2);
             this->lastDirection = GameObject::RIGHT;
             this->lastPosition = Hero::STANDING;
         }
 
         if (directions[1]) {
             directions[1] = false;
-            this->x += this->speed;
+            this->x += static_cast<float>(this->speed);
             this->lastDirection = GameObject::LEFT;
             this->lastPosition = Hero::STANDING;
         }
 
         if (directions[2]) {
             directions[2] = false;
-            this->y -= this->speed;
+            this->y -= static_cast<float>(this->speed);
             this->lastPosition = Hero::STANDING;
         }
 
         if (directions[3]) {
             directions[3] = false;
-            this->y += (this->speed * 2);
+            this->y += static_cast<float>(this->speed * 2);
             this->lastPosition = Hero::STANDING;
         }
 
     } else {
 
         if (directions[0]) {
-            this->x += this->speed;
+            this->x += static_cast<float>(this->speed);
             this->lastDirection = GameObject::RIGHT;
             this->lastPosition = Hero::WALKING;
         }
 
         if (directions[1]) {
-            this->x -= this->speed;
+            this->x -= static_cast<float>(this->speed);
             this->lastDirection = GameObject::LEFT;
             this->lastPosition = Hero::WALKING;
         }
 
         if (directions[2]) {
-            this->y += this->speed;
+            this->y += static_cast<float>(this->speed);
             this->lastPosition = Hero::WALKING;
         }
 
         if (directions[3]) {
-            this->y -= this->speed;
+            this->y -= static_cast<float>(this->speed);
             this->lastPosition = Hero::WALKING;
         }
 
@@ -115,8 +116,8 @@ void Hero::update()
 
 bool Hero::isBoundary()
 {
-    this->currentColors[0] = al_get_pixel(this->collisionMap, this->getX(), this->getY());
-    this->currentColors[1] = al_get_pixel(this->collisionMap, this->getX() + this->getWidth(), this->getY() + this->getHeight());
+    this->currentColors[0] = al_get_pixel(this->collisionMap, static_cast<int>(this->getX()), static_cast<int>(this->getY()));
+    this->currentColors[1] = al_get_pixel(this->collisionMap, static_cast<int>(this->getX() + this->getWidth()), static_cast<int>(this->getY() + this->getHeight()));
 
 	if (currentColors[0].b == 1 && currentColors[1].b == 1)
 	{
