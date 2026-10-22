@@ -18,163 +18,93 @@ Engine::Engine(int width, int height)
 	this->currentLevel = -1;
 	this->pause = false;
 
-    // Inicialiazar allegro y manejar errores de inicializacion
+    // Inicializar allegro, sus addons y los recursos; ante el primer fallo se detiene el juego
     if (!al_init()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar Allegro", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar Allegro");
+        return;
     }
 
-    // Crear timer
     timer = al_create_timer(1.0 / fps);
-    if (!timer) //Manejar errores del timer
-    {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el timer", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        this->error = true;
+    if (!timer) {
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el timer");
+        return;
     }
 
-    // Crear display
     display = al_create_display(width, height);
-    if (!display) // Manejar errores del display
-    {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el display", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        this->error = true;
+    if (!display) {
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el display");
+        return;
     }
 
-    // Crear cola de eventos
     event_list = al_create_event_queue();
-    if (!event_list) // Manejar errores de la cola de eventos
-    {
-        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar la cola de eventos", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        this->error = true;
+    if (!event_list) {
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar la cola de eventos");
+        return;
     }
 
-    // Inicializar teclado y manejar errores
     if (!al_install_keyboard()) {
-        al_show_native_message_box(display, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el teclado", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el teclado");
+        return;
     }
-
-    // Inicializar addon de imagenes y manejar errores
     if (!al_init_image_addon()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de imagenes", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el addon de imagenes");
+        return;
     }
-
-    // Inicializacion del addon de figuras primitivas
     if (!al_init_primitives_addon()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de primitivas", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el addon de primitivas");
+        return;
     }
-
-    // Inicializacion de los addons de fuente y formato True Type Font
     if (!al_init_font_addon()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes");
+        return;
     }
-
     if (!al_init_ttf_addon()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes True Type", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el addon de fuentes True Type");
+        return;
     }
-
     if (!al_install_audio()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el addon de audio", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el addon de audio");
+        return;
     }
-
     if (!al_init_acodec_addon()) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar inicializar el codec de audio", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar inicializar el codec de audio");
+        return;
     }
-
     if (!al_reserve_samples(2)) {
-        al_show_native_message_box(nullptr, "Error!", "Fallo inicialización", "Hubo un error al intentar reservar los samples", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo inicialización", "Hubo un error al intentar reservar los samples");
+        return;
     }
 
-    // Carga de imagen de titulo y manejo de falla en carga
+    // Carga de imagenes, fuente y audios
     titleScreen = al_load_bitmap("Sprites/YAY.jpg");
     if (!titleScreen) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de titulo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo en carga", "Hubo un error al intentar cargar la imagen de titulo");
+        return;
     }
-
-    // Carga de imagen de gameover y manejo de fallla de carga
     gameover = al_load_bitmap("Sprites/gameover.png");
-    if (!gameover) // si no pudo cargar la imagen
-    {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la imagen de fin de juego", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+    if (!gameover) {
+        fail("Fallo en carga", "Hubo un error al intentar cargar la imagen de fin de juego");
+        return;
     }
-
-    // Cargar la fuente de los letreros
     billboardFont = al_load_ttf_font("gothic_pixel.ttf", 68, 0);
     if (!billboardFont) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar la fuente de los letreros", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo en carga", "Hubo un error al intentar cargar la fuente de los letreros");
+        return;
     }
-
     intro = al_load_sample("Sprites/intro.wav");
     if (!intro) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de intro", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo en carga", "Hubo un error al intentar cargar el audio de intro");
+        return;
     }
-
     spit = al_load_sample("Sprites/spit.wav");
     if (!spit) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo en carga", "Hubo un error al intentar cargar el audio de disparo");
+        return;
     }
-
     roaring = al_load_sample("Sprites/roar.wav");
     if (!roaring) {
-        al_show_native_message_box(display, "Error!", "Fallo en carga", "Hubo un error al intentar cargar el audio de disparo", nullptr, ALLEGRO_MESSAGEBOX_ERROR);
-        al_destroy_timer(timer);
-        al_destroy_display(display);
-        al_destroy_event_queue(event_list);
-        this->error = true;
+        fail("Fallo en carga", "Hubo un error al intentar cargar el audio del rugido");
+        return;
     }
 
     // Registro de fuentes de eventos a la cola de eventos
@@ -231,10 +161,24 @@ Engine::Engine(int width, int height)
 
 Engine::~Engine()
 {
-    // Destruccion del timer, del display y de la cola de eventos cuando se destruyer el objeto engine
-    al_destroy_timer(timer);
-    al_destroy_display(display);
-    al_destroy_event_queue(event_list);
+    // Destruccion de los recursos creados, que pueden faltar si la inicializacion fallo
+    if (roaring) al_destroy_sample(roaring);
+    if (spit) al_destroy_sample(spit);
+    if (intro) al_destroy_sample(intro);
+    if (billboardFont) al_destroy_font(billboardFont);
+    if (gameover) al_destroy_bitmap(gameover);
+    if (titleScreen) al_destroy_bitmap(titleScreen);
+    if (event_list) al_destroy_event_queue(event_list);
+    if (display) al_destroy_display(display);
+    if (timer) al_destroy_timer(timer);
+}
+
+// Muestra el error, marca la falla y detiene el juego
+void Engine::fail(const char *heading, const char *message)
+{
+    al_show_native_message_box(display, "Error!", heading, message, nullptr, ALLEGRO_MESSAGEBOX_ERROR);
+    this->error = true;
+    this->stopRunning();
 }
 
 void Engine::createHero()

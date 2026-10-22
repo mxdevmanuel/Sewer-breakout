@@ -9,8 +9,10 @@ int main()
 
     // Creamos el engine del juego
     Engine* engine = new Engine(1020,450);
-    // Iniciamos el timer del juego
-    al_start_timer(engine->timer);
+    // Iniciamos el timer del juego si la inicializacion fue correcta
+    if (engine->isRunning()) {
+        al_start_timer(engine->timer);
+    }
     // Iniciamos el bucle principal del juego
     while(engine->isRunning())
     {

@@ -21,18 +21,20 @@ private:
 	int currentLevel;
 	bool pause;
 
-	ALLEGRO_DISPLAY *display; // Pantalla donde se dibujara el juego
+	ALLEGRO_DISPLAY *display = nullptr; // Pantalla donde se dibujara el juego
 
-	ALLEGRO_BITMAP *titleScreen; // Imagen de bienvenida al juego
-	ALLEGRO_BITMAP *gameover; // Imagen de fin de juego
-    ALLEGRO_SAMPLE *intro, *spit, *roaring;
+	ALLEGRO_BITMAP *titleScreen = nullptr; // Imagen de bienvenida al juego
+	ALLEGRO_BITMAP *gameover = nullptr; // Imagen de fin de juego
+    ALLEGRO_SAMPLE *intro = nullptr, *spit = nullptr, *roaring = nullptr;
+
+    void fail(const char *heading, const char *message); // Muestra un error de inicializacion y detiene el juego
 
 public:
     Manager *TheManager = Manager::Instance(); // Administrador de objetos en el juego
 
-    ALLEGRO_FONT *billboardFont;
-	ALLEGRO_TIMER *timer; // Temporizador de frecuencia de dibujado
-	ALLEGRO_EVENT_QUEUE *event_list; // Cola de eventos producidos en el juego
+    ALLEGRO_FONT *billboardFont = nullptr;
+	ALLEGRO_TIMER *timer = nullptr; // Temporizador de frecuencia de dibujado
+	ALLEGRO_EVENT_QUEUE *event_list = nullptr; // Cola de eventos producidos en el juego
 	ALLEGRO_EVENT ev{}; // Variable que recibe los eventos del juego
 	bool redraw; // Variable que indica cuando debe ser redibujada la pantalla
 
