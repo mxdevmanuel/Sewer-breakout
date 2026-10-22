@@ -10,6 +10,7 @@ Manager::Manager()
 {
     GameOver = false;
     bossSaved = false;
+    bossref = nullptr;
     setCurrentMap(0);
 }
 
@@ -33,7 +34,14 @@ void Manager::initStatsFont()
 
 void Manager::clearGameObjectList()
 {
+	for (GameObject *object : this->gameObjectList) {
+		delete object;
+	}
 	this->gameObjectList.clear();
+
+	// La referencia al jefe apuntaria a un objeto borrado
+	this->bossref = nullptr;
+	this->bossSaved = false;
 }
 
 void Manager::setHero()
