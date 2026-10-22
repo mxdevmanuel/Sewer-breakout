@@ -23,6 +23,7 @@ Engine::Engine(int width, int height)
         fail("Fallo inicialización", "Hubo un error al intentar inicializar Allegro");
         return;
     }
+    al_init_native_dialog_addon();
 
     timer = al_create_timer(1.0 / fps);
     if (!timer) {
