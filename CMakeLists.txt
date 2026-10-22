@@ -9,7 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(./)
 
-file(GLOB sourcefiles "*.h" "*.cpp")
+file(GLOB sourcefiles CONFIGURE_DEPENDS "*.h" "*.cpp")
 
 add_executable(SewerBreakout ${sourcefiles})
 

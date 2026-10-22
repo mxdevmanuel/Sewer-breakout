@@ -18,7 +18,7 @@ cmake --preset debug && cmake --build build
 - Format with `clang-format -i <files>` (`.clang-format`) and lint with `clang-tidy -p build <files>` (`.clang-tidy`). The existing code has not been bulk-reformatted, so run the formatter only on files you are touching.
 
 - Assets are loaded via relative paths (`Sprites/...`, `gothic_pixel.ttf`), so the working directory must be the repo root, not `build/`.
-- `CMakeLists.txt` collects sources with `file(GLOB "*.h" "*.cpp")` at the top level, so re-run `cmake` after adding or removing files. Sources live flat in the repo root.
+- `CMakeLists.txt` collects sources with `file(GLOB CONFIGURE_DEPENDS "*.h" "*.cpp")` at the top level, so the build picks up added or removed files without re-running `cmake`. Sources live flat in the repo root.
 - Requires the Allegro 5 dev libraries (core, image, primitives, font, ttf, audio, acodec, native dialog).
 
 ## Architecture
