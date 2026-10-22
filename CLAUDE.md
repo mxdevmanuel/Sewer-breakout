@@ -13,6 +13,7 @@ cmake --preset debug && cmake --build build
 ./build/SewerBreakout     # must be run from the repo root
 ```
 
+- The root `Makefile` wraps these: `make` (configures on first use, then builds), `make run`, `make configure` (re-run CMake), `make clean`. This is what `:make` in Neovim uses.
 - The `debug` preset (Ninja) writes `build/compile_commands.json`, which `.clangd` points at for editor support.
 - Format with `clang-format -i <files>` (`.clang-format`) and lint with `clang-tidy -p build <files>` (`.clang-tidy`). The existing code has not been bulk-reformatted, so run the formatter only on files you are touching.
 
