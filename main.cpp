@@ -5,10 +5,10 @@ int main()
 {
 
     // Random
-    srand(time(NULL));
+    srand(time(nullptr));
 
     // Creamos el engine del juego
-    Engine* engine = new Engine(1020,450);
+    auto *engine = new Engine(1020,450);
     // Iniciamos el timer del juego si la inicializacion fue correcta
     if (engine->isRunning()) {
         al_start_timer(engine->timer);
@@ -25,9 +25,6 @@ int main()
         engine->draw();
 
     }
-
-    // Creditos
-    engine->showCredits();
 
     // Destruimos el motor del juego y regresamos el control al sistema operativo
     delete engine;

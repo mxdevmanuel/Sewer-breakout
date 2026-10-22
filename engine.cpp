@@ -16,7 +16,6 @@ Engine::Engine(int width, int height)
     this->fullScreen = false;
     this->error = false;
 	this->currentLevel = -1;
-	this->pause = false;
 
     // Inicializar allegro, sus addons y los recursos; ante el primer fallo se detiene el juego
     if (!al_init()) {
@@ -113,37 +112,6 @@ Engine::Engine(int width, int height)
     al_register_event_source(event_list, al_get_keyboard_event_source());
 
     al_set_window_title(this->getDisplay(), "Sewer breakout!"); // Establece el nombre del juego como titulo de ventana
-    bool iniciar = false; // Variable para iniciar el juego
-    al_play_sample(this->intro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
-    showTitleScreen(); // Se muestra la pantalla de inicio
-    al_draw_text(this->billboardFont, al_map_rgb(77, 113, 9), 510, 307.5, ALLEGRO_ALIGN_CENTER, "Presione Enter");
-    al_flip_display(); // Se manda al display
-
-    while (iniciar == false && this->error == false) {
-        // Esperamos un evento
-        al_wait_for_event(event_list, &ev);
-
-        // Revisa si es un evento de teclado
-        if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
-            switch (ev.keyboard.keycode) {
-            case ALLEGRO_KEY_ENTER:
-                iniciar = true;
-                break;
-            case ALLEGRO_KEY_ESCAPE:
-                iniciar = true;
-                this->stopRunning();
-                break;
-            default:
-                break;
-            }
-        }
-        // Revisa si es el evento es de cierre
-        else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            this->stopRunning();
-            break;
-        }
-        al_flush_event_queue(event_list);
-    }
 
     defineMaps();
     createHero();
@@ -152,11 +120,16 @@ Engine::Engine(int width, int height)
     } catch (int e) {
         this->error = true;
     }
-	this->selectLevel(0);
 
     if (error) {
         this->stopRunning();
+        return;
     }
+
+    // El juego arranca en la pantalla de titulo; el nivel se carga al presionar Enter
+    al_play_sample(this->intro, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, nullptr);
+    this->state = GameState::Title;
+    this->redraw = true;
 }
 
 Engine::~Engine()
@@ -278,8 +251,16 @@ void Engine::defineMaps()
 
 void Engine::keyPressed(int key)
 {
-    if (!TheManager->GameOver) {
-
+    switch (this->state) {
+    case GameState::Title:
+        if (key == ALLEGRO_KEY_ENTER) {
+            this->selectLevel(0);
+            this->state = GameState::Playing;
+        } else if (key == ALLEGRO_KEY_ESCAPE) {
+            this->startCredits();
+        }
+        break;
+    case GameState::Playing:
         switch (key) {
         case ALLEGRO_KEY_RIGHT:
         case ALLEGRO_KEY_D:
@@ -300,8 +281,13 @@ void Engine::keyPressed(int key)
         default:
             break;
         }
-    } else {
-        this->stopRunning();
+        break;
+    case GameState::GameOver:
+        // Cualquier tecla en la pantalla de fin de juego pasa a los creditos
+        this->startCredits();
+        break;
+    default:
+        break;
     }
 }
 
@@ -315,6 +301,11 @@ void Engine::shoot()
 
 void Engine::keyReleased(int key)
 {
+    // Las teclas soltadas durante la pausa tambien detienen al heroe
+    if (this->state != GameState::Playing && this->state != GameState::Paused) {
+        return;
+    }
+
     switch (key) {
     case ALLEGRO_KEY_RIGHT:
     case ALLEGRO_KEY_D:
@@ -333,11 +324,13 @@ void Engine::keyReleased(int key)
         this->TheManager->mainHeroe->stop(3);
         break;
     case ALLEGRO_KEY_SPACE:
-        this->shoot();
+        if (this->state == GameState::Playing) {
+            this->shoot();
+        }
         break;
-	case ALLEGRO_KEY_P:
-		this->pause = !this->pause;
-		break;
+    case ALLEGRO_KEY_P:
+        this->state = this->state == GameState::Playing ? GameState::Paused : GameState::Playing;
+        break;
     default:
         break;
     }
@@ -345,7 +338,6 @@ void Engine::keyReleased(int key)
 
 void Engine::handleEvents()
 {
-
     switch (this->ev.type) {
     case ALLEGRO_EVENT_KEY_DOWN:
         keyPressed(ev.keyboard.keycode);
@@ -358,6 +350,7 @@ void Engine::handleEvents()
         break;
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
         this->stopRunning();
+        break;
     default:
         break;
     }
@@ -365,66 +358,94 @@ void Engine::handleEvents()
 
 void Engine::showPause()
 {
-	al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Pausa");
-	al_flip_display();
+    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Pausa");
+}
+
+// Dibuja el mapa, el heroe, los objetos y las estadisticas
+void Engine::drawScene()
+{
+    this->TheManager->getCurrentMap()->drawMap(this->TheManager->mainHeroe->getX(), this->TheManager->mainHeroe->getY());
+    this->TheManager->mainHeroe->draw();
+    this->TheManager->DrawGameObjects();
+    this->TheManager->DrawStats();
 }
 
 void Engine::draw()
 {
-	if (!pause)
-	{
-		if (!TheManager->GameOver) {
-			if (this->redraw) {
-				al_clear_to_color(al_map_rgb(0, 0, 0));
-				this->TheManager->getCurrentMap()->drawMap(this->TheManager->mainHeroe->getX(), this->TheManager->mainHeroe->getY());
-				this->TheManager->mainHeroe->draw();
-				this->TheManager->DrawGameObjects();
-				this->TheManager->DrawStats();
-				this->redraw = false;
-				al_flip_display();
-			}
-		}
-		else {
-			al_clear_to_color(al_map_rgb(0, 0, 0));
-			this->showgameover();
-			al_flip_display();
-		}
-	}
-	else {
-		this->showPause();
-	}
+    // Solo se dibuja en un tick del timer y cuando no hay eventos pendientes, para no atrasarse
+    if (!this->redraw || !al_is_event_queue_empty(this->event_list)) {
+        return;
+    }
+    this->redraw = false;
+
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    switch (this->state) {
+    case GameState::Title:
+        this->showTitleScreen();
+        al_draw_text(this->billboardFont, al_map_rgb(77, 113, 9), 510, 307.5, ALLEGRO_ALIGN_CENTER, "Presione Enter");
+        break;
+    case GameState::Playing:
+        this->drawScene();
+        break;
+    case GameState::Paused:
+        this->drawScene();
+        this->showPause();
+        break;
+    case GameState::GameOver:
+        this->showgameover();
+        break;
+    case GameState::Credits:
+        this->drawCreditsPage(this->creditsTicks / creditsPageTicks);
+        break;
+    }
+    al_flip_display();
 }
 
 void Engine::update()
 {
-	if (!this->pause)
-	{
-		if (this->TheManager->mainHeroe->isDead()) {
-			TheManager->GameOver = true;
-			return;
-		}
+    // La logica avanza solo con los ticks del timer, no con cada evento de teclado
+    if (this->ev.type != ALLEGRO_EVENT_TIMER) {
+        return;
+    }
 
-		if (this->TheManager->mainHeroe->restart)
-		{
-			this->selectLevel(this->currentLevel);
-			this->TheManager->mainHeroe->restart = false;
-			return;
-		}
+    switch (this->state) {
+    case GameState::Playing:
+        this->updatePlaying();
+        break;
+    case GameState::Credits:
+        if (++this->creditsTicks >= creditsPages * creditsPageTicks) {
+            this->stopRunning();
+        }
+        break;
+    default:
+        break;
+    }
+}
 
-		if (this->TheManager->getEnemiesCount() == 0 && this->TheManager->mainHeroe->nextLevel)
-		{
-			this->TheManager->mainHeroe->nextLevel = false;
-			if (this->currentLevel != 2)
-			{
-				this->selectLevel(this->currentLevel + 1);
-			}
-		}
+void Engine::updatePlaying()
+{
+    if (this->TheManager->mainHeroe->isDead()) {
+        TheManager->GameOver = true;
+        this->state = GameState::GameOver;
+        return;
+    }
 
-		this->TheManager->CheckCollissions();
-		this->TheManager->mainHeroe->update();
-		this->TheManager->UpdateGameObjects();
-	}
+    if (this->TheManager->mainHeroe->restart) {
+        this->selectLevel(this->currentLevel);
+        this->TheManager->mainHeroe->restart = false;
+        return;
+    }
 
+    if (this->TheManager->getEnemiesCount() == 0 && this->TheManager->mainHeroe->nextLevel) {
+        this->TheManager->mainHeroe->nextLevel = false;
+        if (this->currentLevel != 2) {
+            this->selectLevel(this->currentLevel + 1);
+        }
+    }
+
+    this->TheManager->CheckCollissions();
+    this->TheManager->mainHeroe->update();
+    this->TheManager->UpdateGameObjects();
 }
 
 // Regresa el estado del juego
@@ -451,31 +472,36 @@ void Engine::showgameover()
     al_draw_bitmap(gameover, 200, 50, 0);
 }
 
-// Muestra los creditos finales
-void Engine::showCredits()
+// Pasa a los creditos finales, que avanzan con los ticks del timer
+void Engine::startCredits()
+{
+    this->creditsTicks = 0;
+    this->state = GameState::Credits;
+}
+
+// Dibuja la pagina `page` de los creditos finales
+void Engine::drawCreditsPage(int page)
 {
     ALLEGRO_TRANSFORM transform;
     al_identity_transform(&transform);
     al_use_transform(&transform);
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    this->showTitleScreen();
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 180, ALLEGRO_ALIGN_CENTER, "Creditos");
-    al_flip_display();
-    al_rest(2);
 
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Arte");
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 180, ALLEGRO_ALIGN_CENTER, "Andrea Vanessa Delgado Huerta");
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 260, ALLEGRO_ALIGN_CENTER, "Alejandra Morales Lopez");
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 340, ALLEGRO_ALIGN_CENTER, "Karla Mercedes Hernandez Pascacio");
-    al_flip_display();
-    al_rest(2);
-
-    al_clear_to_color(al_map_rgb(0, 0, 0));
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Codigo");
-    al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 260, ALLEGRO_ALIGN_CENTER, "Juan Manuel Morales Garcia");
-    al_flip_display();
-    al_rest(2);
+    switch (page) {
+    case 0:
+        this->showTitleScreen();
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 180, ALLEGRO_ALIGN_CENTER, "Creditos");
+        break;
+    case 1:
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Arte");
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 180, ALLEGRO_ALIGN_CENTER, "Andrea Vanessa Delgado Huerta");
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 260, ALLEGRO_ALIGN_CENTER, "Alejandra Morales Lopez");
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 340, ALLEGRO_ALIGN_CENTER, "Karla Mercedes Hernandez Pascacio");
+        break;
+    default:
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 100, ALLEGRO_ALIGN_CENTER, "Codigo");
+        al_draw_text(this->billboardFont, al_map_rgb(255, 255, 255), 510, 260, ALLEGRO_ALIGN_CENTER, "Juan Manuel Morales Garcia");
+        break;
+    }
 }
 
 // Devuelve el display actual

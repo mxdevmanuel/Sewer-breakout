@@ -10,6 +10,9 @@
 #include <allegro5/allegro_acodec.h>
 #include "manager.h"
 
+// Pantallas por las que pasa el juego
+enum class GameState { Title, Playing, Paused, GameOver, Credits };
+
 class Engine
 {
 private:
@@ -19,7 +22,10 @@ private:
 	bool fullScreen; // Bandera de pantalla completa
     bool error;
 	int currentLevel;
-	bool pause;
+	GameState state = GameState::Title; // Pantalla actual del juego
+	int creditsTicks = 0; // Ticks transcurridos en los creditos
+	static constexpr int creditsPageTicks = 120; // Duracion de cada pagina de creditos (2 s a 60 fps)
+	static constexpr int creditsPages = 3;
 
 	ALLEGRO_DISPLAY *display = nullptr; // Pantalla donde se dibujara el juego
 
@@ -46,11 +52,14 @@ public:
 
 	void showTitleScreen(); // Muestra la imagen de bienvenida en pantalla
 	void showgameover(); // Muestra la imagen del fin de juego en la pantalla
-    void showCredits(); // Muestra los creditos finales
+	void startCredits(); // Pasa a los creditos finales
+	void drawCreditsPage(int page); // Dibuja una pagina de los creditos finales
 	void showPause();
+	void drawScene(); // Dibuja el nivel actual
 
 	void handleEvents(); // Metodo sin retorno que monitorea los eventos del juego
 	void update(); // Metodo sin retorno que actualiza los objetos del juego
+	void updatePlaying(); // Actualiza el nivel mientras se juega
 	void draw(); // Metodo sin retorno que dibuja el juego
 	void defineMaps(); // Metodo que define los mapas a utilizar en el juego
 	void createHero(); // Metodo que inicializa al heroe dentro del manager
